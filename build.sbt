@@ -4,18 +4,11 @@ scalaVersion := "2.11.5"
 resolvers += "Scalaz Bintray Repo" at "http://dl.bintray.com/scalaz/releases"
 
 libraryDependencies ++= Seq(
-
-  // http://etorreborre.github.io/specs2/
-  "org.specs2" %% "specs2-core" % "2.4.15" % "test",
-
-  // http://slick.typesafe.com/doc/2.1.0/
-  "com.typesafe.slick" %% "slick" % "2.1.0",
-
-  // https://github.com/typesafehub/scala-logging
-  "com.typesafe.scala-logging" %% "scala-logging" % "3.1.0",
-
-  // https://github.com/scalaz/scalaz-stream
-  "org.scalaz.stream" %% "scalaz-stream" % "0.6a"
+  "org.specs2" %% "specs2-core" % "2.4.15" % "test",          // http://etorreborre.github.io/specs2/
+  "com.typesafe.scala-logging" %% "scala-logging" % "3.1.0",  // https://github.com/typesafehub/scala-logging
+  "org.scalaz.stream" %% "scalaz-stream" % "0.6a"//,            // https://github.com/scalaz/scalaz-stream
+  // "com.typesafe.slick" %% "slick" % "2.1.0",                  // http://slick.typesafe.com/doc/2.1.0/
+  // "com.github.fommil" %% "freeslick" % "2.0.3-SNAPSHOT"       // https://github.com/fommil/freeslick
 )
 
 // for specs2 macros
@@ -28,15 +21,17 @@ scalacOptions in Test += "-Yrangepos"
 
 scalacOptions ++= Seq(
   "-deprecation",
-  "–unchecked",
   "-encoding", "UTF-8",
-  "-explaintypes",
   "-feature",
-  "-language:higherKinds"
-  // "-language:implicitConversions",
-  // "-language:existentials",
-  // "-language:postfixOps",
-  // "-language:experimental.macros"
+  "-language:existentials",
+  "-language:higherKinds",
+  "-language:implicitConversions",
+  "-unchecked",
+  "-Xfatal-warnings",
+  "-Xlint",
+  "-Yno-adapted-args",
+  "-Ywarn-dead-code",
+  "-Ywarn-numeric-widen",
+  "-Ywarn-value-discard",
+  "-Xfuture"
 )
-
-seq(kataSettings: _*)
