@@ -1,47 +1,36 @@
 object RW {
-	trait Repr[T]
+  import scalaz._, Scalaz._, effect._, IO._
+  import scalaz.concurrent.Task
 
-	trait SelOps[location, repr[_]] {
-		def select: location => repr[location]
-	}
+  import java.nio.file._
+  import java.nio.charset._
 
-	trait ReadOps[location, content, repr[_]] {
-		def read: repr[location] => repr[content]
-	}
+  abstract class Sym[repr[_]: Monad, path, content] {
+    def lift[T]: T => repr[T]
+    def read: repr[path] => repr[content]
+    def write: repr[path] => repr[content] => repr[Unit]
+    def delete: repr[path] => repr[Boolean]
+  }
 
-	trait WriteOps[location, content, repr[_]] {
-	  def write: repr[location] => repr[content]
-	}
-
-	case class Debug[T](value: T) extends Repr[T]
-	case class MockLocation(path: String)
-	case class MockContent(content: String)
-
-	implicit object DebugSel extends SelOps[MockLocation, Debug] {
-		//: MockLocation => Debug[MockLocation]
-		def select = Debug(_)
-	  	
-	}
-
-	implicit object DebugRead extends ReadOps[MockLocation, MockContent, Debug] {
-		//: Debug[MockLocation] => Debug[MockContent]
-	 	def read = loc => Debug(MockContent("-"))
-	}
-
-	implicit object DebugWrite extends WriteOps[MockLocation, MockContent, Debug] {
-		//: Debug[MockLocation] => Debug[MockContent]
-	 	def write = loc => Debug(MockContent("-"))
-	}
-
-
-	def Read[content, location, repr[_]](loc: location)(
-		implicit r: ReadOps[location, content, repr],
-	  				 s:  SelOps[location, repr]): repr[content] = {
-
-		r.read(s.select(loc))
-	}
-
-	Read(MockLocation("bob"))
-
-	// Read(1)
+  implicit object EvalSym extends Sym[IO, Path, String] {
+    def lift[T] = v => IO(v)
+    def read = loc => {
+      loc.map{ p =>
+        import scala.collection.JavaConverters._
+        Files.readAllLines(p).asScala.mkString(System.lineSeparator)
+      }
+    }
+      
+    def write = loc => content =>
+      for {
+        l <- loc
+        c <- content
+      } yield {
+        Files.write(l, c.getBytes(Charset.forName("UTF-8")))
+        ()
+      }
+    
+    def delete = loc =>
+      loc.map(l => Files.deleteIfExists(l))
+  }
 }
